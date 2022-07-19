@@ -84,7 +84,7 @@ if($null -eq [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens 
         }
         catch {
             throw "Unable to establish connection to AAD. $($_.Exception)"
-            break
+            exit 1
         }
     }
     else{
@@ -93,7 +93,7 @@ if($null -eq [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens 
         }
         catch {
             throw "Unable to establish connection to AAD. $($_.Exception)"
-            break
+            exit 1
         }
     }
 }
@@ -107,7 +107,7 @@ $SkipRoles = $Config.ScriptMainConfig.RolesExclusionList
 $Schedule = New-Object Microsoft.Open.MSGraph.Model.AzureADMSPrivilegedSchedule #Create schedule for role assignments
 $Schedule.Type = "Once"
 $Schedule.StartDateTime = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-$Schedule.endDateTime = ($Schedule.StartDateTime).AddHours(4)   #The number in brackets defines how many hours the roles will remain active.
+$Schedule.endDateTime = ($Schedule.StartDateTime).AddHours(8)   #The number in brackets defines how many hours the roles will remain active.
 
 Write-Output "Getting data from PIM..."
 $Roles = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $ResourceID #Getting list of all roles in tenant
@@ -156,7 +156,7 @@ $ActiveAssignmentsSplat = @{
 }
 
 if($RoleWasActivated){
-    Start-Sleep -Seconds 30
+    Start-Sleep -Seconds 10
 }
 
 $ActiveAssignments = Get-AzureADMSPrivilegedRoleAssignment @ActiveAssignmentsSplat | Where-Object { $_.AssignmentState -eq "Active" }
