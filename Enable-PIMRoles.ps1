@@ -14,13 +14,17 @@
     List of the current roles states
 .NOTES
     Install AzureAdPreview module using: Install-Module AzureAdPreview
-    version: 1.6.1
+    version: 1.7.0
 #>
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $false)]
     [switch]
-    $FirstRun
+    $FirstRun,
+
+    [Parameter(Mandatory = $false)]
+    [int]
+    $Hours
 )
 import-module AzureADPreview
 
@@ -107,7 +111,7 @@ $SkipRoles = $Config.ScriptMainConfig.RolesExclusionList
 $Schedule = New-Object Microsoft.Open.MSGraph.Model.AzureADMSPrivilegedSchedule #Create schedule for role assignments
 $Schedule.Type = "Once"
 $Schedule.StartDateTime = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
-$Schedule.endDateTime = ($Schedule.StartDateTime).AddHours(8)   #The number in brackets defines how many hours the roles will remain active.
+$Schedule.endDateTime = ($Schedule.StartDateTime).AddHours($Hours)   #The number in brackets defines how many hours the roles will remain active.
 
 Write-Output "Getting data from PIM..."
 $Roles = Get-AzureADMSPrivilegedRoleDefinition -ProviderId aadRoles -ResourceId $ResourceID #Getting list of all roles in tenant
@@ -175,6 +179,5 @@ foreach ($ActiveAssignment in $ActiveAssignments) {
     
     $Output += $RoleAssignment
 }
-$Wshell = New-Object -ComObject Wscript.Shell 
-$Wshell.Popup("Enable-PIMRoles script work has been completed") | Out-Null
+
 $Output | Format-Table
