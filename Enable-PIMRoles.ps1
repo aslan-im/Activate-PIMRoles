@@ -14,7 +14,7 @@
     List of the current roles states
 .NOTES
     Install AzureAdPreview module using: Install-Module AzureAdPreview
-    version: 1.7.0
+    version: 1.7.2
 #>
 [CmdletBinding()]
 param (
@@ -93,10 +93,17 @@ if($null -eq [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens 
     }
     else{
         try {
-            AzureAdPreview\Connect-AzureAd -AccountId $SignInData.Account
+            Write-Output "Connecting to the Azure AD with saved credentials"
+            AzureAdPreview\Connect-AzureAd -AccountId $SignInData.Account -ErrorAction STOP
         }
         catch {
             throw "Unable to establish connection to AAD. $($_.Exception)"
+            exit 1
+        }
+
+        if($null -eq [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens -or ([Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens).Count -eq 0)
+        {
+            Write-Error "Connection has not been established"
             exit 1
         }
     }
@@ -163,7 +170,15 @@ if($RoleWasActivated){
     Start-Sleep -Seconds 10
 }
 
-$ActiveAssignments = Get-AzureADMSPrivilegedRoleAssignment @ActiveAssignmentsSplat | Where-Object { $_.AssignmentState -eq "Active" }
+$CycleCounter = 0
+
+do{
+    $ActiveAssignments = Get-AzureADMSPrivilegedRoleAssignment @ActiveAssignmentsSplat | Where-Object { $_.AssignmentState -eq "Active" }
+    $CycleCounter += 1
+}
+while(!$ActiveAssignments -or $CycleCounter -gt 10)
+
+
 foreach ($ActiveAssignment in $ActiveAssignments) {
     $RoleAssignment = [PSCustomObject]@{
         Name        = ""
