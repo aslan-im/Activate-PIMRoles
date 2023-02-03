@@ -170,10 +170,13 @@ if($RoleWasActivated){
     Start-Sleep -Seconds 10
 }
 
+$CycleCounter = 0
+
 do{
     $ActiveAssignments = Get-AzureADMSPrivilegedRoleAssignment @ActiveAssignmentsSplat | Where-Object { $_.AssignmentState -eq "Active" }
+    $CycleCounter += 1
 }
-while(!$ActiveAssignments)
+while(!$ActiveAssignments -or $CycleCounter -gt 10)
 
 
 foreach ($ActiveAssignment in $ActiveAssignments) {
