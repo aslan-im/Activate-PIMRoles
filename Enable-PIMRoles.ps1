@@ -14,7 +14,7 @@
     List of the current roles states
 .NOTES
     Install AzureAdPreview module using: Install-Module AzureAdPreview
-    version: 1.7.1
+    version: 1.7.2
 #>
 [CmdletBinding()]
 param (
