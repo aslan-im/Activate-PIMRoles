@@ -14,7 +14,7 @@
     List of the current roles states
 .NOTES
     Install AzureAdPreview module using: Install-Module AzureAdPreview
-    version: 1.7.2
+    version: 1.7.3
 #>
 [CmdletBinding()]
 param (
@@ -67,7 +67,9 @@ $ConfigPath = "$ScriptRoot\Config\Config.json"
 $SignInDataFilePath = "$ScriptRoot\Config\SignInData.json"
 
 if ($FirstRun) {
-    Remove-Item -Path $SignInDataFilePath
+    if([System.IO.File]::Exists($SignInDataFilePath)){
+        Remove-Item -Path $SignInDataFilePath
+    }
 }
 
 $Config = Import-JsonConfigFile $ConfigPath
